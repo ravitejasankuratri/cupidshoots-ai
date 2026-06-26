@@ -31,7 +31,7 @@ resource "aws_secretsmanager_secret" "dsql" {
 resource "aws_secretsmanager_secret_version" "dsql" {
   secret_id = aws_secretsmanager_secret.dsql.id
   secret_string = jsonencode({
-    endpoint = aws_dsql_cluster.main.endpoint
+    endpoint = "${aws_dsql_cluster.main.identifier}.dsql.${var.aws_region}.on.aws"
     region   = var.aws_region
     database = "postgres"
   })

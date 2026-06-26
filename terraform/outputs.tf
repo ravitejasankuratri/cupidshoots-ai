@@ -1,6 +1,6 @@
 output "dsql_endpoint" {
   description = "Aurora DSQL cluster endpoint — add to Vercel env as DSQL_ENDPOINT"
-  value       = aws_dsql_cluster.main.endpoint
+  value       = "${aws_dsql_cluster.main.identifier}.dsql.${var.aws_region}.on.aws"
 }
 
 output "db_secret_arn" {
@@ -10,5 +10,5 @@ output "db_secret_arn" {
 
 output "cluster_id" {
   description = "Aurora DSQL cluster ID"
-  value       = aws_dsql_cluster.main.id
+  value       = aws_dsql_cluster.main.identifier
 }
