@@ -11,7 +11,7 @@ CREATE TABLE organizers (
 
 CREATE TABLE events (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  organizer_id UUID NOT NULL REFERENCES organizers(id),
+  organizer_id UUID NOT NULL,
   event_code   CHAR(6) UNIQUE NOT NULL,
   event_name   VARCHAR(255) NOT NULL,
   venue        VARCHAR(255),
@@ -22,12 +22,12 @@ CREATE TABLE events (
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_events_code ON events(event_code);
-CREATE INDEX idx_events_end_time ON events(end_time, status);
+CREATE INDEX ASYNC ON events(event_code);
+CREATE INDEX ASYNC ON events(end_time, status);
 
 CREATE TABLE submissions (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id         UUID NOT NULL REFERENCES events(id),
+  event_id         UUID NOT NULL,
   attendee_name    VARCHAR(255) NOT NULL,
   attendee_number  INTEGER NOT NULL,
   attendee_email   VARCHAR(255) NOT NULL,
@@ -36,12 +36,12 @@ CREATE TABLE submissions (
   UNIQUE (event_id, attendee_number)
 );
 
-CREATE INDEX idx_submissions_event ON submissions(event_id);
+CREATE INDEX ASYNC ON submissions(event_id);
 
 CREATE TABLE compliments (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  submission_id UUID NOT NULL REFERENCES submissions(id),
-  event_id      UUID NOT NULL REFERENCES events(id),
+  submission_id UUID NOT NULL,
+  event_id      UUID NOT NULL,
   from_number   INTEGER NOT NULL,
   to_name       VARCHAR(255) NOT NULL,
   to_number     INTEGER NOT NULL,
@@ -50,14 +50,14 @@ CREATE TABLE compliments (
   CHECK (from_number != to_number)
 );
 
-CREATE INDEX idx_compliments_event_from ON compliments(event_id, from_number);
-CREATE INDEX idx_compliments_event_to ON compliments(event_id, to_number);
+CREATE INDEX ASYNC ON compliments(event_id, from_number);
+CREATE INDEX ASYNC ON compliments(event_id, to_number);
 
 CREATE TABLE matches (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id            UUID NOT NULL REFERENCES events(id),
-  person_a_submission UUID NOT NULL REFERENCES submissions(id),
-  person_b_submission UUID NOT NULL REFERENCES submissions(id),
+  event_id            UUID NOT NULL,
+  person_a_submission UUID NOT NULL,
+  person_b_submission UUID NOT NULL,
   poem_for_a          TEXT,
   poem_for_b          TEXT,
   matched_at          TIMESTAMPTZ DEFAULT NOW(),
