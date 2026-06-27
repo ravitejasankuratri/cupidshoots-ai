@@ -1,3 +1,20 @@
+# ── Import existing AWS resources into state ───────────────────────────────────
+
+import {
+  to = aws_secretsmanager_secret.dsql
+  id = "cupidshoots/dsql"
+}
+
+import {
+  to = aws_iam_role.lambda_exec
+  id = "cupidshoots-lambda-exec"
+}
+
+import {
+  to = aws_iam_role.scheduler
+  id = "cupidshoots-scheduler"
+}
+
 terraform {
   required_version = ">= 1.7"
 
