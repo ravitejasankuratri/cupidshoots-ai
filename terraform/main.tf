@@ -24,6 +24,14 @@ terraform {
       version = ">= 5.80"
     }
   }
+
+  backend "s3" {
+    bucket         = "cupidshoots-tfstate"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "cupidshoots-tfstate-lock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
