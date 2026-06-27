@@ -26,11 +26,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "cupidshoots-tfstate"
-    key            = "terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "cupidshoots-tfstate-lock"
-    encrypt        = true
+    bucket  = "cupidshoots-tfstate"
+    key     = "terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
   }
 }
 
