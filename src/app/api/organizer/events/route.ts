@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler";
 import { getDbClient } from "@/lib/db";
