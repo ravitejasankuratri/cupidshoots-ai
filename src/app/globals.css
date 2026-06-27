@@ -20,6 +20,9 @@
   --border: #f7cdd7;
   --ring: #e6336b;
 
+  --destructive: #c81e4e;
+  --destructive-foreground: #ffffff;
+
   --radius: 1.5rem;
 }
 
@@ -36,6 +39,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
