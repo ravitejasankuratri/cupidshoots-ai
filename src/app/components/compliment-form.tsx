@@ -82,11 +82,40 @@ export function ComplimentForm({ code }: { code: string }) {
     );
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!enoughCompliments) return;
-    // No backend yet — go straight to the confirmation screen.
-    window.location.href = `/event/${code}/confirmation`;
+    if (!enoughCompliments || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/events/${code}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attendee_name: sender.name.trim(),
+          attendee_number: Number(sender.sticker),
+          attendee_email: sender.email.trim(),
+          compliments: completedCompliments.map((c) => ({
+            to_name: c.targetName.trim(),
+            to_number: Number(c.targetSticker),
+            message: c.message.trim(),
+          })),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Something went wrong. Please try again.");
+        return;
+      }
+      window.location.href = `/event/${code}/confirmation`;
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -273,6 +302,12 @@ export function ComplimentForm({ code }: { code: string }) {
         </section>
       )}
 
+      {error && (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          {error}
+        </p>
+      )}
+
       {/* Navigation */}
       <div className="flex items-center gap-3">
         {step > 1 && (
@@ -301,11 +336,11 @@ export function ComplimentForm({ code }: { code: string }) {
         {step === 3 && (
           <button
             type="submit"
-            disabled={!enoughCompliments}
+            disabled={!enoughCompliments || submitting}
             className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-6 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
           >
             <Check className="size-5" />
-            Submit compliments
+            {submitting ? "Submitting…" : "Submit compliments"}
           </button>
         )}
       </div>
