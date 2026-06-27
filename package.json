@@ -13,6 +13,7 @@
     "@aws-sdk/client-scheduler": "^3.1075.0",
     "@aws-sdk/client-ses": "^3.1075.0",
     "@aws-sdk/dsql-signer": "^3.1075.0",
+    "aws-amplify": "^6.18.0",
     "aws-jwt-verify": "^5.2.1",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
