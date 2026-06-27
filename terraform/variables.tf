@@ -9,3 +9,14 @@ variable "deletion_protection" {
   type        = bool
   default     = false
 }
+
+variable "app_url" {
+  description = "Vercel deployment URL (e.g. https://cupidshoots-ai.vercel.app)"
+  type        = string
+}
+
+variable "internal_api_key" {
+  description = "Secret key shared between Lambda and Next.js internal API"
+  type        = string
+  sensitive   = true
+}

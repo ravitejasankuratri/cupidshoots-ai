@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "terraform/**"
+      - "lambda/**"
 
 permissions:
   contents: read
@@ -42,6 +43,12 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        env:
+          TF_VAR_app_url: ${{ secrets.APP_URL }}
+          TF_VAR_internal_api_key: ${{ secrets.INTERNAL_API_KEY }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+        env:
+          TF_VAR_app_url: ${{ secrets.APP_URL }}
+          TF_VAR_internal_api_key: ${{ secrets.INTERNAL_API_KEY }}
