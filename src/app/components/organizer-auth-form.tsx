@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { signIn, signUp, confirmSignUp } from "aws-amplify/auth";
+import { signIn, signOut, signUp, confirmSignUp } from "aws-amplify/auth";
 
 type Mode = "sign-in" | "sign-up" | "confirm";
 
@@ -51,7 +51,8 @@ export function OrganizerAuthForm() {
         return;
       }
 
-      // Sign in
+      // Sign out any stale session before signing in
+      try { await signOut(); } catch { /* no active session */ }
       const result = await signIn({ username: email, password });
       if (result.isSignedIn) {
         router.push("/organizer/dashboard");
