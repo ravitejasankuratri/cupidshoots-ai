@@ -48,8 +48,9 @@ export default function OrganizerDashboardPage() {
         }
         const data = await res.json();
         setEvents(data.events ?? []);
-      } catch {
-        router.push("/organizer/sign-in");
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+        // Only redirect on auth errors, not network/API errors
       } finally {
         setLoading(false);
       }
