@@ -55,8 +55,9 @@ export function CreateEventForm() {
       }
 
       router.push("/organizer/dashboard");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("Create event error:", err);
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
