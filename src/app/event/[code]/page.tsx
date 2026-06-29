@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { ComplimentForm } from "../../components/compliment-form";
+import { getDbClient } from "@/lib/db";
 
 export default async function EventPage({
   params,
@@ -10,26 +11,44 @@ export default async function EventPage({
   const { code } = await params;
   const eventCode = code.toUpperCase();
 
-  // Validate event code server-side
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/events/${eventCode}`, {
-    cache: "no-store",
-  });
+  // Validate event code directly via DB
+  let event: { id: string; event_name: string; event_date: string; status: string } | null = null;
+  let errorMessage = "";
+  let isEnded = false;
 
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    const message =
-      res.status === 410
-        ? "This event has already ended."
-        : data.error || "Event not found. Check your code and try again.";
+  try {
+    const db = await getDbClient();
+    try {
+      const { rows } = await db.query(
+        `SELECT id, event_name, event_date, status FROM events WHERE event_code = $1`,
+        [eventCode]
+      );
+      if (rows.length) {
+        if (rows[0].status === "completed") {
+          isEnded = true;
+          errorMessage = "This event has already ended.";
+        } else {
+          event = rows[0];
+        }
+      } else {
+        errorMessage = "Event not found. Check your code and try again.";
+      }
+    } finally {
+      await db.end();
+    }
+  } catch {
+    errorMessage = "Unable to load event. Please try again.";
+  }
+
+  if (!event) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center px-5 py-10">
         <div className="w-full max-w-md rounded-[2rem] border border-border bg-card px-6 py-10 text-center shadow-xl shadow-primary/10">
           <Heart className="mx-auto mb-4 size-10 text-primary/40" />
           <h1 className="mb-2 font-display text-2xl font-bold text-foreground">
-            {res.status === 410 ? "Event Ended" : "Event Not Found"}
+            {isEnded ? "Event Ended" : "Event Not Found"}
           </h1>
-          <p className="mb-6 text-sm text-muted-foreground">{message}</p>
+          <p className="mb-6 text-sm text-muted-foreground">{errorMessage}</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition hover:brightness-105"
@@ -40,8 +59,6 @@ export default async function EventPage({
       </main>
     );
   }
-
-  const event = await res.json();
 
   return (
     <main className="flex flex-1 flex-col items-center px-5 py-8">
