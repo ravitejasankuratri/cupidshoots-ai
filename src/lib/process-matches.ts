@@ -12,7 +12,7 @@ async function generatePoem(
 
   const response = await bedrock.send(
     new InvokeModelCommand({
-      modelId: "amazon.nova-2-lite-v1:0",
+      modelId: "amazon.nova-micro-v1:0",
       contentType: "application/json",
       accept: "application/json",
       body: JSON.stringify({
