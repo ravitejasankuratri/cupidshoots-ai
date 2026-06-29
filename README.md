@@ -1,6 +1,30 @@
 # CupidShoots.ai
 
-Anonymous compliment + mutual matching for singles meetups. Attendees submit compliments; when two people complimented each other, the system generates a love poem via AWS Bedrock and emails both parties.
+No account. Just a code. Compliment strangers anonymously. When two people like each other back, we detect the match and email both an AI-generated love poem. Serverless. AWS. Pure magic.
+
+## What It Does
+
+Attendees at singles meetups anonymously compliment each other using a 6-character event code — no account needed. When two people complimented each other back, we detect the mutual match and email both an AI-generated love poem via AWS Bedrock simultaneously. No rejection risk. Just the moment they find out the feeling was mutual.
+
+## How We Built It
+
+Next.js on Vercel for the frontend and API, Aurora DSQL for the matchmaking self-join query, AWS Cognito for organizer auth, EventBridge Scheduler to fire a Lambda exactly when the event closes, and Amazon Nova Micro on Bedrock to generate the poems. Lambda calls back into our Next.js API rather than the DB directly — keeping credentials centralized.
+
+## Challenges We Ran Into
+
+Aurora DSQL IAM auth token generation in a serverless environment, keeping DB credentials out of Lambda while still letting it trigger match processing, and making the poem feel personal rather than generic.
+
+## Accomplishments We're Proud Of
+
+The mutual match detection is a single elegant SQL self-join. The whole system is serverless and costs essentially nothing between events.
+
+## What We Learned
+
+Serverless boundaries force cleaner architecture. The Lambda-to-API callback pattern simplified credential management more than we expected.
+
+## What's Next
+
+Paid organizer tiers, real-time match notifications, and expanding beyond singles events to networking and team socials.
 
 ## Architecture
 
@@ -14,10 +38,19 @@ Anonymous compliment + mutual matching for singles meetups. Attendees submit com
 | Database | Aurora DSQL (PostgreSQL-compatible, serverless) in us-east-1 |
 | Auth | AWS Cognito User Pool (organizer-only) |
 | Match Processor | AWS Lambda (Node 20) triggered by EventBridge Scheduler |
-| AI / Poems | AWS Bedrock — `anthropic.claude-haiku-20240307-v1:0` |
+| AI / Poems | AWS Bedrock — Amazon Nova Micro (`amazon.nova-micro-v1:0`) |
 | Email | AWS SES from `noreply@cupidshoots.ai` |
 | Secrets | AWS Secrets Manager |
-| IaC | AWS CDK (TypeScript) |
+| IaC | Terraform |
+
+## Built With
+
+**Languages:** TypeScript, SQL, HCL
+**Frameworks:** Next.js (App Router), Terraform
+**Platform:** Vercel, AWS
+**Cloud Services:** AWS Bedrock, AWS Lambda, AWS SES, AWS Cognito, AWS EventBridge Scheduler, AWS Secrets Manager
+**Database:** Aurora DSQL
+**APIs:** Amazon Nova Micro (via AWS Bedrock)
 
 ## How It Works
 
@@ -34,7 +67,7 @@ Anonymous compliment + mutual matching for singles meetups. Attendees submit com
 - Node.js 20+
 - AWS CLI configured with appropriate credentials
 - Aurora DSQL cluster
-- AWS CDK deployed (`cd cdk && npm ci && npx cdk deploy`)
+- Terraform applied (`cd terraform && terraform init && terraform apply`)
 
 ### Environment Variables
 
