@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CupidShoots.ai
+
+Anonymous compliment + mutual matching for singles meetups. Attendees submit compliments; when two people complimented each other, the system generates a love poem via AWS Bedrock and emails both parties.
+
+## Architecture
+
+![Architecture Diagram](./architecture.drawio.png)
+
+## Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend + API | Next.js (App Router) on Vercel |
+| Database | Aurora DSQL (PostgreSQL-compatible, serverless) in us-east-1 |
+| Auth | AWS Cognito User Pool (organizer-only) |
+| Match Processor | AWS Lambda (Node 20) triggered by EventBridge Scheduler |
+| AI / Poems | AWS Bedrock — `anthropic.claude-haiku-20240307-v1:0` |
+| Email | AWS SES from `noreply@cupidshoots.ai` |
+| Secrets | AWS Secrets Manager |
+| IaC | AWS CDK (TypeScript) |
+
+## How It Works
+
+1. An organizer creates an event with a 6-character code and schedules a match processing time.
+2. Attendees visit the event page, enter the event code, and submit compliments for other attendees (min 3).
+3. At the scheduled time, the Lambda match processor fires and calls back into the Next.js API.
+4. Mutual matches (A complimented B and B complimented A) are detected.
+5. A love poem is generated via AWS Bedrock for each match and emailed to both parties via SES.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 20+
+- AWS CLI configured with appropriate credentials
+- Aurora DSQL cluster
+- AWS CDK deployed (`cd cdk && npm ci && npx cdk deploy`)
+
+### Environment Variables
+
+```
+DSQL_ENDPOINT=<cluster>.dsql.us-east-1.on.aws
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+COGNITO_USER_POOL_ID=
+COGNITO_CLIENT_ID=
+INTERNAL_API_KEY=
+FROM_EMAIL=noreply@cupidshoots.ai
+MATCH_PROCESSOR_LAMBDA_ARN=
+SCHEDULER_ROLE_ARN=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Database Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+export DSQL_ENDPOINT=<your-cluster>.dsql.us-east-1.on.aws
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Generate IAM auth token
+aws dsql generate-db-connect-admin-auth-token \
+  --hostname $DSQL_ENDPOINT \
+  --region us-east-1
 
-## Learn More
+# Run schema
+psql "host=$DSQL_ENDPOINT dbname=postgres sslmode=require" -f schema.sql
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Run Locally
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployed on Vercel. Push to `main` for production (`cupidshoots.ai`), push to `develop` for staging (`cupidshoots-dev.vercel.app`).
