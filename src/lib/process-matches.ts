@@ -12,18 +12,19 @@ async function generatePoem(
 
   const response = await bedrock.send(
     new InvokeModelCommand({
-      modelId: "amazon.titan-text-lite-v1",
+      modelId: "anthropic.claude-haiku-4-5-20251001-v1:0",
       contentType: "application/json",
       accept: "application/json",
       body: JSON.stringify({
-        inputText: prompt,
-        textGenerationConfig: { maxTokenCount: 300, temperature: 0.8 },
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 300,
+        messages: [{ role: "user", content: prompt }],
       }),
     })
   );
 
   const result = JSON.parse(Buffer.from(response.body).toString());
-  return result.results[0].outputText;
+  return result.content[0].text;
 }
 
 async function sendMatchEmail(
