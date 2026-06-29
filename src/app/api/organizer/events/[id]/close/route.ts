@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getDbClient } from "@/lib/db";
 import { verifyOrganizerToken } from "@/lib/auth";
+import { processMatches } from "@/lib/process-matches";
 
 export async function POST(
   req: Request,
@@ -15,7 +16,6 @@ export async function POST(
   const { id } = await params;
   const db = await getDbClient();
   try {
-    // Verify the event belongs to this organizer
     const { rows } = await db.query(
       `SELECT e.id FROM events e
        JOIN organizers o ON o.id = e.organizer_id AND o.cognito_sub = $2
@@ -25,24 +25,10 @@ export async function POST(
     if (!rows.length) {
       return NextResponse.json({ error: "Event not found or already closed" }, { status: 404 });
     }
-
-    // Trigger the internal process-matches endpoint
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/internal/process-matches`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-internal-key": process.env.INTERNAL_API_KEY!,
-      },
-      body: JSON.stringify({ event_id: id }),
-    });
-
-    if (!res.ok) {
-      return NextResponse.json({ error: "Failed to trigger match processing" }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
   } finally {
     await db.end();
   }
+
+  const result = await processMatches(id);
+  return NextResponse.json({ success: true, ...result });
 }
